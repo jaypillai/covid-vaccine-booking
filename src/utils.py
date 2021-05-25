@@ -89,7 +89,7 @@ def display_table(dict_list):
 def display_info_dict(details):
     for key, value in details.items():
         if isinstance(value, list):
-            if len(value) > 0 and all(isinstance(item, dict) for item in value):
+            if all(isinstance(item, dict) for item in value):
                 print(f"\t{key}:")
                 display_table(value)
             else:
@@ -131,9 +131,6 @@ def get_saved_user_info(filename):
     with open(filename, "r") as f:
         data = json.load(f)
 
-    # for backward compatible logic
-    if data["search_option"] !=3 and "pin_code_location_dtls" not in data:
-        data["pin_code_location_dtls"] = []
     return data
 
 
@@ -145,23 +142,7 @@ def get_dose_num(collected_details):
         return 2
 
     return 1
-    
-def start_date_search():
-        # Get search start date
-        start_date = input(
-                "\nSearch for next seven day starting from when?\nUse 1 for today, 2 for tomorrow, or provide a date in the format dd-mm-yyyy. Default 2: "
-            )
-        if not start_date:
-            start_date = 2
-        elif start_date in ["1", "2"]:
-            start_date = int(start_date)
-        else:
-            try:
-                datetime.datetime.strptime(start_date, "%d-%m-%Y")
-            except ValueError:
-                start_date = 2
-                print('Invalid Date! Proceeding with tomorrow.')
-        return start_date
+
 
 def collect_user_details(request_header):
     # Get Beneficiaries
@@ -173,8 +154,8 @@ def collect_user_details(request_header):
         print("There should be at least one beneficiary. Exiting.")
         os.system("pause")
         sys.exit(1)
-    
-    
+
+
     # Make sure all beneficiaries have the same type of vaccine
     vaccine_types = [beneficiary["vaccine"] for beneficiary in beneficiary_dtls]
     vaccines = Counter(vaccine_types)
@@ -200,23 +181,20 @@ def collect_user_details(request_header):
     )
     # get search method to use
     search_option = input(
-        """Search by Pincode? Or by State/District Or Smart search State/District for selected Pincodes ? \nEnter 1 for Pincode or 2 for State/District or 3 for State/District filter by Pincodes (Optimized for rate-limit) (Default 2): """
+        """Search by Pincode? Or by State/District? \nEnter 1 for Pincode or 2 for State/District. (Default 2) : """
     )
 
-    if not search_option or int(search_option) not in [1, 2, 3]:
+    if not search_option or int(search_option) not in [1, 2]:
         search_option = 2
     else:
         search_option = int(search_option)
 
-    pin_code_location_dtls = []
-    if search_option == 3:
+    if search_option == 2:
+        # Collect vaccination center preferance
         location_dtls = get_districts(request_header)
-        pin_code_location_dtls = get_pincodes()
-    elif search_option == 2:
-        # Collect vaccination center preference
-        location_dtls = get_districts(request_header)
+
     else:
-        # Collect vaccination center preference
+        # Collect vaccination center preferance
         location_dtls = get_pincodes()
 
     print(
@@ -242,8 +220,8 @@ def collect_user_details(request_header):
     )
 
     refresh_freq = int(refresh_freq) if refresh_freq and int(refresh_freq) >= 1 else 15
-    
-    
+
+
     #Checking if partially vaccinated and thereby checking the the due date for dose2
     if all([beneficiary['status'] == 'Partially Vaccinated' for beneficiary in beneficiary_dtls]):
         today=datetime.datetime.today()
@@ -256,26 +234,36 @@ def collect_user_details(request_header):
             )
             os.system("pause")
             sys.exit(1)
-            
-            
+
+
         if (datetime.datetime.strptime(due_date[0], "%d-%m-%Y")-datetime.datetime.strptime(str(today), "%d-%m-%Y")).days > 0:
             print("\nHaven't reached the due date for your second dose")
             search_due_date=input(
                 "\nDo you want to search for the week starting from your due date(y/n) Default n:"
             )
             if search_due_date=="y":
-                
+
                 start_date=due_date[0]
             else:
                 os.system("pause")
                 sys.exit(1)
-        else:
-            start_date=start_date_search()
 
     else:
-        # Non vaccinated
-        start_date=start_date_search()
-        
+        # Get search start date
+        start_date = input(
+                "\nSearch for next seven day starting from when?\nUse 1 for today, 2 for tomorrow, or provide a date in the format dd-mm-yyyy. Default 2: "
+            )
+        if not start_date:
+            start_date = 2
+        elif start_date in ["1", "2"]:
+            start_date = int(start_date)
+        else:
+            try:
+                datetime.datetime.strptime(start_date, "%d-%m-%Y")
+            except ValueError:
+                start_date = 2
+                print('Invalid Date! Proceeding with tomorrow.')
+    # Get preference of Free/Paid option
     fee_type = get_fee_type_preference()
 
     print(
@@ -294,7 +282,6 @@ def collect_user_details(request_header):
     collected_details = {
         "beneficiary_dtls": beneficiary_dtls,
         "location_dtls": location_dtls,
-        "pin_code_location_dtls": pin_code_location_dtls,
         "search_option": search_option,
         "minimum_slots": minimum_slots,
         "refresh_freq": refresh_freq,
@@ -333,8 +320,7 @@ def check_calendar_by_district(
         minimum_slots,
         min_age_booking,
         fee_type,
-        dose_num,
-        beep_required=True
+        dose_num
 ):
     """
     This function
@@ -368,7 +354,6 @@ def check_calendar_by_district(
                 resp = resp.json()
 
                 resp = filter_centers_by_age(resp, min_age_booking)
-
                 if "centers" in resp:
                     print(
                         f"Centers available in {location['district_name']} from {start_date} as of {today.strftime('%Y-%m-%d %H:%M:%S')}: {len(resp['centers'])}"
@@ -380,12 +365,10 @@ def check_calendar_by_district(
             else:
                 pass
 
-        # beep only when needed
-        if beep_required:
-            for location in location_dtls:
-                if location["district_name"] in [option["district"] for option in options]:
-                    for _ in range(2):
-                        beep(location["alert_freq"], 150)
+        for location in location_dtls:
+            if location["district_name"] in [option["district"] for option in options]:
+                for _ in range(2):
+                    beep(location["alert_freq"], 150)
         return options
 
     except Exception as e:
@@ -432,8 +415,9 @@ def check_calendar_by_pincode(
 
             elif resp.status_code == 200:
                 resp = resp.json()
-
+                print(resp)
                 resp = filter_centers_by_age(resp, min_age_booking)
+                print("resp {}".format(resp))
 
                 if "centers" in resp:
                     print(
@@ -444,6 +428,7 @@ def check_calendar_by_pincode(
                     )
 
             else:
+                print("Failed Api call {}".format(resp))
                 pass
 
         for location in location_dtls:
@@ -545,7 +530,7 @@ def book_appointment(request_header, details, mobile, generate_captcha_pref):
 
 
 def check_and_book(
-        request_header, beneficiary_dtls, location_dtls, pin_code_location_dtls, search_option, **kwargs
+        request_header, beneficiary_dtls, location_dtls, search_option, **kwargs
 ):
     """
     This function
@@ -578,7 +563,7 @@ def check_and_book(
         else:
             pass
 
-        if search_option == 3:
+        if search_option == 2:
             options = check_calendar_by_district(
                 request_header,
                 vaccine_type,
@@ -587,32 +572,7 @@ def check_and_book(
                 minimum_slots,
                 min_age_booking,
                 fee_type,
-                dose_num,
-                beep_required=False
-            )
-
-            if not isinstance(options, bool):
-                pincode_filtered_options = []
-                for option in options: 
-                    for location in pin_code_location_dtls:
-                        if int(location["pincode"]) == int(option["pincode"]):
-                            # ADD this filtered PIN code option
-                            pincode_filtered_options.append(option)
-                            for _ in range(2):
-                                beep(location["alert_freq"], 150)
-                options = pincode_filtered_options
-
-        elif search_option == 2:
-            options = check_calendar_by_district(
-                request_header,
-                vaccine_type,
-                location_dtls,
-                start_date,
-                minimum_slots,
-                min_age_booking,
-                fee_type,
-                dose_num,
-                beep_required=True
+                dose_num
             )
         else:
             options = check_calendar_by_pincode(
@@ -661,93 +621,93 @@ def check_and_book(
         time.sleep(1)
         return True
 
+    if not slots_available:
+        return True
     else:
-        if not slots_available:
-            return True
-        else:
-            # If we reached here then it means there is at-least one center having required doses.
+        # If we reached here then it means there is at-least one center having required doses.
 
-            # sort options based on max available capacity of vaccine doses
-            # highest available capacity of vaccine doses first for better chance of booking
+        # sort options based on max available capacity of vaccine doses
+        # highest available capacity of vaccine doses first for better chance of booking
 
-            # ==> Caveat: if multiple folks are trying for same region like tier-I or tier-II cities then
-            # choosing always first maximum available capacity may be a problem.
-            # To solve this problem, we can use bucketization logic on top of available capacity
-            #
-            # Example:
-            # meaning of pair is {center id, available capacity of vaccine doses at the center}
-            # options = [{c1, 203}, {c2, 159}, {c3, 180}, {c4, 25}, {c5, 120}]
-            #
-            # Solution-1) Max available capacity wise ordering of options = [{c1, 203}, {c3, 180}, {c2, 159}, {c5, 120}, {c4, 25}]
-            # Solution-2) Max available capacity with simple bucketization wise ordering of options = [{c1, 200}, {c3, 150}, {c2, 150}, {c5, 100}, {c4, 0}] when bucket size = 50
-            # Solution-3) Max available capacity with simple bucketization & random seed wise ordering of options = [{c1, 211}, {c2, 180}, {c3, 160}, {c5, 123}, {c4, 15}] when bucket size = 50 + random seed
-            #
-            # Solution-3) is best as it also maximizing the chance of booking while considering max
-            # at the same time it also adds flavour of randomization to handle concurrency.
+        # ==> Caveat: if multiple folks are trying for same region like tier-I or tier-II cities then
+        # choosing always first maximum available capacity may be a problem.
+        # To solve this problem, we can use bucketization logic on top of available capacity
+        #
+        # Example:
+        # meaning of pair is {center id, available capacity of vaccine doses at the center}
+        # options = [{c1, 203}, {c2, 159}, {c3, 180}, {c4, 25}, {c5, 120}]
+        #
+        # Solution-1) Max available capacity wise ordering of options = [{c1, 203}, {c3, 180}, {c2, 159}, {c5, 120}, {c4, 25}]
+        # Solution-2) Max available capacity with simple bucketization wise ordering of options = [{c1, 200}, {c3, 150}, {c2, 150}, {c5, 100}, {c4, 0}] when bucket size = 50
+        # Solution-3) Max available capacity with simple bucketization & random seed wise ordering of options = [{c1, 211}, {c2, 180}, {c3, 160}, {c5, 123}, {c4, 15}] when bucket size = 50 + random seed
+        #
+        # Solution-3) is best as it also maximizing the chance of booking while considering max
+        # at the same time it also adds flavour of randomization to handle concurrency.
 
-            BUCKET_SIZE = 50
-            options = sorted(
-                options,
-                key=lambda k: (BUCKET_SIZE*int(k.get('available', 0)/BUCKET_SIZE)) + random.randint(0, BUCKET_SIZE-1),
-                reverse=True)
+        BUCKET_SIZE = 50
+        options = sorted(
+            options,
+            key=lambda k: (BUCKET_SIZE*int(k.get('available', 0)/BUCKET_SIZE)) + random.randint(0, BUCKET_SIZE-1),
+            reverse=True)
 
-            start_epoch = int(time.time())
+        start_epoch = int(time.time())
 
-            # if captcha automation is enabled then have less duration for stale information of centers & slots.
-            MAX_ALLOWED_DURATION_OF_STALE_INFORMATION_IN_SECS = 1*60 if captcha_automation == 'n' else 2*60
+        # if captcha automation is enabled then have less duration for stale information of centers & slots.
+        MAX_ALLOWED_DURATION_OF_STALE_INFORMATION_IN_SECS = 1*60 if captcha_automation == 'n' else 2*60
 
-            # Now try to look into all options unless it is not authentication related issue
-            for i in range(0, len(options)):
-                option = options[i]
-                all_slots_of_a_center = option.get("slots", [])
-                if not all_slots_of_a_center:
-                    continue
-                # For better chances of booking, use random slots of a particular center
-                # This will help if too many folks are trying for same region at the same time.
-                # Everyone will have better chances of booking otherwise everyone will look for same slot of same center at a time.
-                # Randomized slots selection is maximizing chances of booking
-                random.shuffle(all_slots_of_a_center) # in-place modification
+        # Now try to look into all options unless it is not authentication related issue
+        for i in range(0, len(options)):
+            option = options[i]
+            all_slots_of_a_center = option.get("slots", [])
+            if not all_slots_of_a_center:
+                continue
+            # For better chances of booking, use random slots of a particular center
+            # This will help if too many folks are trying for same region at the same time.
+            # Everyone will have better chances of booking otherwise everyone will look for same slot of same center at a time.
+            # Randomized slots selection is maximizing chances of booking
+            random.shuffle(all_slots_of_a_center) # in-place modification
 
-                for selected_slot in all_slots_of_a_center:
-                    # if have spent too much time in loop iteration then means we are looking at stale information about centers & slots.
-                    # so we should re-calculate this information while ending this loop more aggressively.
-                    current_epoch = int(time.time())
-                    if current_epoch - start_epoch >= MAX_ALLOWED_DURATION_OF_STALE_INFORMATION_IN_SECS:
-                        print("tried too many centers but still not able to book then look for current status of centers ...")
-                        return True
+            for selected_slot in all_slots_of_a_center:
+                # if have spent too much time in loop iteration then means we are looking at stale information about centers & slots.
+                # so we should re-calculate this information while ending this loop more aggressively.
+                current_epoch = int(time.time())
+                if current_epoch - start_epoch >= MAX_ALLOWED_DURATION_OF_STALE_INFORMATION_IN_SECS:
+                    print("tried too many centers but still not able to book then look for current status of centers ...")
+                    return True
 
-                    try:
-                        center_id = option["center_id"]
-                        print(f"============> Trying Choice # {i} Center # {center_id}, Slot #{selected_slot}")
+                try:
+                    center_id = option["center_id"]
+                    print(f"============> Trying Choice # {i} Center # {center_id}, Slot #{selected_slot}")
 
-                        dose_num = 2 if [beneficiary["status"] for beneficiary in beneficiary_dtls][0] == "Partially Vaccinated" else 1
-                        new_req = {
-                            "beneficiaries": [
-                                beneficiary["bref_id"] for beneficiary in beneficiary_dtls
-                            ],
-                            "dose": dose_num,
-                            "center_id": option["center_id"],
-                            "session_id": option["session_id"],
-                            "slot": selected_slot,
-                        }
-                        print(f"Booking with info: {new_req}")
-                        booking_status = book_appointment(request_header, new_req, mobile, captcha_automation)
-                        # is token error ? If yes then break the loop by returning immediately
-                        if booking_status == 0:
-                            return False
-                        else:
-                            # try irrespective of booking status as it will be beneficial choice.
-                            # try different center as slots are full for this center
-                            # break the slots loop
-                            print('Center is fully booked..Trying another...')
-                            break
-                    except IndexError:
-                        print("============> Invalid Option!")
-                        os.system("pause")
-                        pass
+                    dose_num = 2 if [beneficiary["status"] for beneficiary in beneficiary_dtls][0] == "Partially Vaccinated" else 1
+                    new_req = {
+                        "beneficiaries": [
+                            beneficiary["bref_id"] for beneficiary in beneficiary_dtls
+                        ],
+                        "dose": dose_num,
+                        "center_id": option["center_id"],
+                        "session_id": option["session_id"],
+                        "slot": selected_slot,
+                    }
+                    print(f"Booking with info: {new_req}")
+                    booking_status = book_appointment(request_header, new_req, mobile, captcha_automation)
+                    # is token error ? If yes then break the loop by returning immediately
+                    if booking_status == 0:
+                        return False
+                    else:
+                        # try irrespective of booking status as it will be beneficial choice.
+                        # try different center as slots are full for this center
+                        # break the slots loop
+                        print('Center is fully booked..Trying another...')
+                        break
+                except IndexError:
+                    print("============> Invalid Option!")
+                    os.system("pause")
+                    pass
 
-            # tried all slots of all centers but still not able to book then look for current status of centers
-            return True
+        # tried all slots of all centers but still not able to book then look for current status of centers
+        return True
+
 def get_vaccine_preference():
     print(
         "It seems you're trying to find a slot for your first dose. Do you have a vaccine preference?"
@@ -786,9 +746,6 @@ def get_pincodes():
     locations = []
     pincodes = input("Enter comma separated index numbers of pincodes to monitor: ")
     for idx, pincode in enumerate(pincodes.split(",")):
-        if not pincode or len(pincode) < 6:
-            print(f"Ignoring invalid pincode: {pincode}")
-            continue
         pincode = {"pincode": pincode, "alert_freq": 440 + ((2 * idx) * 110)}
         locations.append(pincode)
     return locations
@@ -868,7 +825,7 @@ def fetch_beneficiaries(request_header):
     return requests.get(BENEFICIARIES_URL, headers=request_header)
 
 
-    
+
 def vaccine_dose2_duedate(vaccine_type):
     """
     This function
@@ -878,7 +835,7 @@ def vaccine_dose2_duedate(vaccine_type):
     covishield_due_date=84
     covaxin_due_date=28
     sputnikV_due_date=21
-    
+
     if vaccine_type=="COVISHIELD":
         return covishield_due_date
     elif vaccine_type=="COVAXIN":
@@ -901,7 +858,7 @@ def get_beneficiaries(request_header):
 
     if beneficiaries.status_code == 200:
         beneficiaries = beneficiaries.json()["beneficiaries"]
-        
+
 
         refined_beneficiaries = []
         for beneficiary in beneficiaries:
@@ -911,7 +868,7 @@ def get_beneficiaries(request_header):
             if beneficiary["vaccination_status"]=="Partially Vaccinated":
                 vaccinated=True
                 days_remaining=vaccine_dose2_duedate(beneficiary["vaccine"])
-                               
+
                 dose1_date=datetime.datetime.strptime(beneficiary["dose1_date"], "%d-%m-%Y")
                 beneficiary["dose2_due_date"]=dose1_date+datetime.timedelta(days=days_remaining)
             else:
@@ -959,7 +916,7 @@ def get_beneficiaries(request_header):
                 "status": item["vaccination_status"],
                 "dose1_date":item["dose1_date"]
             }
-                                
+
             for idx, item in enumerate(beneficiaries)
             if idx in beneficiary_idx
         ]
@@ -967,7 +924,7 @@ def get_beneficiaries(request_header):
         for beneficiary in reqd_beneficiaries:
                 if beneficiary["status"]=="Partially Vaccinated":
                     days_remaining=vaccine_dose2_duedate(beneficiary["vaccine"])
-                        
+
                     dose1_date=datetime.datetime.strptime(beneficiary["dose1_date"], "%d-%m-%Y")
                     dose2DueDate=dose1_date+datetime.timedelta(days=days_remaining)
                     beneficiary["dose2_due_date"]=dose2DueDate.strftime("%d-%m-%Y")

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import copy
-import traceback
 import time
 from types import SimpleNamespace
 import requests, sys, argparse, os, datetime
@@ -30,11 +29,13 @@ def main():
     beep(500, 150)
 
     try:
+        # base_request_header = {
+        #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+        # }
         base_request_header = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
-            'origin': 'https://selfregistration.cowin.gov.in/',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.66',
+            'origin': 'https://selfregistration.cowin.gov.in',
             'referer': 'https://selfregistration.cowin.gov.in/'
-        
         }
 
         token = None
@@ -126,14 +127,15 @@ def main():
             try:
                 token_valid = is_token_valid(token)
 
-                # token is invalid ? 
+                # token is invalid ?
                 # If yes, generate new one
-                if not token_valid: 
+                if not token_valid:
                     print('Token is INVALID.')
                     token = None
                     while token is None:
                         if otp_pref=="n":
                             try:
+                                print('Checking to generate token.')
                                 token = generate_token_OTP(mobile, base_request_header)
                             except Exception as e:
                                 print(str(e))
@@ -142,22 +144,16 @@ def main():
                         elif otp_pref=="y":
                             token = generate_token_OTP_manual(mobile, base_request_header)
 
-                check_and_book(
-                    request_header, 
-                    info.beneficiary_dtls,
-                    info.location_dtls,
-                    info.pin_code_location_dtls,
-                    info.search_option,
-                    min_slots=info.minimum_slots,
-                    ref_freq=info.refresh_freq,
-                    auto_book=info.auto_book,
-                    start_date=info.start_date,
-                    vaccine_type=info.vaccine_type,
-                    fee_type=info.fee_type,
-                    mobile=mobile,
-                    captcha_automation=info.captcha_automation,
-                    dose_num=get_dose_num(collected_details)
-                            )
+                check_and_book(request_header, info.beneficiary_dtls, info.location_dtls, info.search_option,
+                                             min_slots=info.minimum_slots,
+                                             ref_freq=info.refresh_freq,
+                                             auto_book=info.auto_book,
+                                             start_date=info.start_date,
+                                             vaccine_type=info.vaccine_type,
+                                             fee_type=info.fee_type,
+                                             mobile=mobile,
+                                             captcha_automation=info.captcha_automation,
+                                             dose_num=get_dose_num(collected_details))
             except Exception as e:
                 print(str(e))
                 print('Retryin in 5 seconds')
