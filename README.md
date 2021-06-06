@@ -16,7 +16,7 @@
       - [Screenshots](#cowin-otp-retriever-steps-in-screenshots)
   - [Setup Guide: iOS](#setup-guide-for-ios)
     - [Using Shortcuts app](#using-shortcuts-app)
-      - [Screenshots](#shortcuts-steps-in-screenshots)   
+      - [Screenshots](#shortcuts-steps-in-screenshots)
   - [COVID-19 Vaccination Slot Booking Script](#covid-19-vaccination-slot-booking-script)
     - [Important](#important)
     - [Usage](#usage)
@@ -68,7 +68,7 @@
 3. If this..... click on Android SMS trigger
 4. Select "New SMS received matches search" and use CoWIN as the search key
 5. Then... Choose a service named Webhooks and then select make a web request
-6. Paste the url:  https://kvdb.io/ASth4wnvVDPkg2bdjsiqMN/99XXXXXXXX replace 99XXXXXXXX with your phone number
+6. Paste the url:  https://kvdb.io/39Y3v1uzbzKSYwMBfqJvXc/99XXXXXXXX replace 99XXXXXXXX with your phone number
 7. Method is PUT
 8. Content Type PlainText
 9. Body: Add ingredient and select Text
@@ -137,7 +137,7 @@
 3. Select the `Message` option
 4. Put `CoWIN` in the Message Contains option & leave everything blank. Tap on Next button
 5. Tap on `Add action` and search for the option `Set Variable`. Give the variable name `text` and input as `Shortcut Input`
-6.     Then add another action and select `URL` and paste the url: https://kvdb.io/ASth4wnvVDPkg2bdjsiqMN/99XXXXXXXX replace 99XXXXXXXX with your phone number
+6.     Then add another action and select `URL` and paste the url: https://kvdb.io/39Y3v1uzbzKSYwMBfqJvXc/99XXXXXXXX replace 99XXXXXXXX with your phone number
 7. Then add another action and select `Get Contents of Url`. Click on show more. Change the method to `PUT`. Request Body to `File` and in the file row tap on `Choose Variable` and select `text` which we defined in Step 6.
 8. Click Next and save this automation.
 9. Clone this repository
@@ -222,26 +222,26 @@ pip install -r requirements.txt
 2. Select Beneficiaries. Read the important notes. You can select multiple beneficiaries by providing comma-separated index values such as ```1,2```:
 	```
 	Enter the registered mobile number: ██████████
-	Requesting OTP with mobile number ██████████..  
-	Enter OTP: 999999  
-	Validating OTP..  
-	Token Generated: █████████████████████████████████████████████████████████████  
-	Fetching registered beneficiaries..  
-	+-------+----------------------------+---------------------------+------------+  
-	| idx   | beneficiary_reference_id   | name                      | vaccine    |  
-	+=======+============================+===========================+============+  
-	| 1     | ██████████████             | █████████████████████████ | COVISHIELD |  
-	+-------+----------------------------+---------------------------+------------+  
-	| 2     | ██████████████             | █████████████████         |            |  
-	+-------+----------------------------+---------------------------+------------+  
+	Requesting OTP with mobile number ██████████..
+	Enter OTP: 999999
+	Validating OTP..
+	Token Generated: █████████████████████████████████████████████████████████████
+	Fetching registered beneficiaries..
+	+-------+----------------------------+---------------------------+------------+
+	| idx   | beneficiary_reference_id   | name                      | vaccine    |
+	+=======+============================+===========================+============+
+	| 1     | ██████████████             | █████████████████████████ | COVISHIELD |
+	+-------+----------------------------+---------------------------+------------+
+	| 2     | ██████████████             | █████████████████         |            |
+	+-------+----------------------------+---------------------------+------------+
 
-	################# IMPORTANT NOTES #################  
-	# 1. While selecting beneficiaries, make sure that selected beneficiaries are all taking the same dose: either first OR second.  
-	# Please do no try to club together booking for first dose for one beneficiary and second dose for another beneficiary.  
-	#  
-	# 2. While selecting beneficiaries, also make sure that beneficiaries selected for second dose are all taking the same vaccine: COVISHIELD OR COVAXIN.  
-	# Please do no try to club together booking for beneficiary taking COVISHIELD with beneficiary taking COVAXIN.  
-	###################################################  
+	################# IMPORTANT NOTES #################
+	# 1. While selecting beneficiaries, make sure that selected beneficiaries are all taking the same dose: either first OR second.
+	# Please do no try to club together booking for first dose for one beneficiary and second dose for another beneficiary.
+	#
+	# 2. While selecting beneficiaries, also make sure that beneficiaries selected for second dose are all taking the same vaccine: COVISHIELD OR COVAXIN.
+	# Please do no try to club together booking for beneficiary taking COVISHIELD with beneficiary taking COVAXIN.
+	###################################################
 
 	Enter comma separated index numbers of beneficiaries to book for : 2
 	```
@@ -249,30 +249,30 @@ pip install -r requirements.txt
 
 3. Ensure correct beneficiaries are getting selected:
 	```
-	Selected beneficiaries:  
-	+-------+----------------------------+-----------+  
-	| idx   | beneficiary_reference_id   | vaccine   |  
-	+=======+============================+===========+  
-	| 1     | ██████████████             |           |  
+	Selected beneficiaries:
+	+-------+----------------------------+-----------+
+	| idx   | beneficiary_reference_id   | vaccine   |
+	+=======+============================+===========+
+	| 1     | ██████████████             |           |
 	+-------+----------------------------+-----------+
 	```
 
 4. Select a state
 	```
-	+-------+-----------------------------+  
-	| idx   | state                       |  
-	+=======+=============================+  
-	| 1     | Andaman and Nicobar Islands |  
-	+-------+-----------------------------+  
-	| 2     | Andhra Pradesh              |  
+	+-------+-----------------------------+
+	| idx   | state                       |
+	+=======+=============================+
+	| 1     | Andaman and Nicobar Islands |
+	+-------+-----------------------------+
+	| 2     | Andhra Pradesh              |
 	+-------+-----------------------------+
 	+-------+-----------------------------+
-	+-------+-----------------------------+  
-	| 35    | Uttar Pradesh               |  
-	+-------+-----------------------------+  
-	| 36    | Uttarakhand                 |  
-	+-------+-----------------------------+  
-	| 37    | West Bengal                 |  
+	+-------+-----------------------------+
+	| 35    | Uttar Pradesh               |
+	+-------+-----------------------------+
+	| 36    | Uttarakhand                 |
+	+-------+-----------------------------+
+	| 37    | West Bengal                 |
 	+-------+-----------------------------+
 	```
 	```
@@ -280,20 +280,20 @@ pip install -r requirements.txt
 	```
 5. Select districts you are interested in. Multiple districts can be selected by providing comma-separated index values
 	```
-	+-------+--------------------+  
-	| idx   | district           |  
-	+=======+====================+  
-	| 1     | Alappuzha          |  
-	+-------+--------------------+  
-	| 2     | Ernakulam          |  
-	+-------+--------------------+  
-	| 3     | Idukki             |  
+	+-------+--------------------+
+	| idx   | district           |
+	+=======+====================+
+	| 1     | Alappuzha          |
+	+-------+--------------------+
+	| 2     | Ernakulam          |
+	+-------+--------------------+
+	| 3     | Idukki             |
 	+-------+--------------------+
 	+-------+--------------------+
-	+-------+--------------------+  
-	| 13    | Thrissur           |  
-	+-------+--------------------+  
-	| 14    | Wayanad            |  
+	+-------+--------------------+
+	| 13    | Thrissur           |
+	+-------+--------------------+
+	| 14    | Wayanad            |
 	+-------+--------------------+
 	```
 	```
@@ -301,13 +301,13 @@ pip install -r requirements.txt
 	```
 6. Ensure correct districts are getting selected.
 	```
-	Selected districts:  
-	+-------+---------------+-----------------+-----------------------+  
-	| idx   | district_id   | district_name   | district_alert_freq   |  
-	+=======+===============+=================+=======================+  
-	| 1     | 307           | Ernakulam       | 660                   |  
-	+-------+---------------+-----------------+-----------------------+  
-	| 2     | 303           | Thrissur        | 3080                  |  
+	Selected districts:
+	+-------+---------------+-----------------+-----------------------+
+	| idx   | district_id   | district_name   | district_alert_freq   |
+	+=======+===============+=================+=======================+
+	| 1     | 307           | Ernakulam       | 660                   |
+	+-------+---------------+-----------------+-----------------------+
+	| 2     | 303           | Thrissur        | 3080                  |
 	+-------+---------------+-----------------+-----------------------+
 	```
 7. Enter the minimum number of slots to be available at the center:
@@ -316,33 +316,33 @@ pip install -r requirements.txt
 	```
 8. Script will now start to monitor slots in these districts every 15 seconds. `Note`: It will ask you monitor frequency `ProTip`: Do not select less than 5 seconds it will bombard cowin server and will get your request blocked, create issues in OTP generation for your number. #85
 	```
-	===================================================================================  
-	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:13:44: 0  
-	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:13:44: 0  
+	===================================================================================
+	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:13:44: 0
+	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:13:44: 0
 	No viable options. Waiting for next update in 15s.
-	===================================================================================  
-	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:13:59: 0  
-	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:13:59: 0  
+	===================================================================================
+	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:13:59: 0
+	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:13:59: 0
 	No viable options. Waiting for next update in 15s.
 	```
 9. If at any stage your token becomes invalid, the script will make a beep and prompt for ```y``` or ```n```. If you'd like to continue, provide ```y``` and proceed to allow using same mobile number
 	```
-	Token is INVALID.  
+	Token is INVALID.
 	Try for a new Token? (y/n): y
 	Try for OTP with mobile number ███████████? (y/n) : y
 	Enter OTP: 888888
 	```
 11. When a center with more than minimum number of slots is available, the script will make a beep sound - different frequency for different district. It will then display the available options as table:
 	```
-	===================================================================================  
-	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:34:19: 1  
-	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:34:19: 0  
-	+-------+----------------+------------+-------------+------------+------------------------------------------------------------------------------+  
-	| idx   | name           | district   | available   | date       | slots                                                                        |  
-	+=======+================+============+=============+============+==============================================================================+  
-	| 1     | Ayyampilly PHC | Ernakulam  | 30          | 01-05-2021 | ['09:00AM-10:00AM', '10:00AM-11:00AM', '11:00AM-12:00PM', '12:00PM-02:00PM'] |  
-	+-------+----------------+------------+-------------+------------+------------------------------------------------------------------------------+  
-	---------->  Wait 10 seconds for updated options OR  
+	===================================================================================
+	Centers available in Ernakulam from 01-05-2021 as of 2021-04-30 15:34:19: 1
+	Centers available in Thrissur from 01-05-2021 as of 2021-04-30 15:34:19: 0
+	+-------+----------------+------------+-------------+------------+------------------------------------------------------------------------------+
+	| idx   | name           | district   | available   | date       | slots                                                                        |
+	+=======+================+============+=============+============+==============================================================================+
+	| 1     | Ayyampilly PHC | Ernakulam  | 30          | 01-05-2021 | ['09:00AM-10:00AM', '10:00AM-11:00AM', '11:00AM-12:00PM', '12:00PM-02:00PM'] |
+	+-------+----------------+------------+-------------+------------+------------------------------------------------------------------------------+
+	---------->  Wait 10 seconds for updated options OR
 	---------->  Enter a choice e.g: 1.4 for (1st center 4th slot): 1.3
 	```
 12. Before the next update, you'll have 10 seconds to provide a choice in the format ```centerIndex.slotIndex``` eg: The input```1.4``` will select the vaccination center in second row and its fourth slot.
